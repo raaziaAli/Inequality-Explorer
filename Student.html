@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inequality Explorer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#F1EFE8;min-height:100vh;}
+.header{background:#7F77DD;color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.header h1{font-size:22px;font-weight:700;}
+.name-tag{background:rgba(255,255,255,0.25);padding:6px 16px;border-radius:20px;font-size:16px;font-weight:700;}
+.progress-wrap{background:#EEEDFE;height:14px;}
+.progress-fill{background:#1D9E75;height:14px;transition:width 0.5s;}
+.progress-label{background:#EEEDFE;padding:6px 20px;font-size:15px;color:#534AB7;font-weight:700;border-bottom:2px solid #D3D1C7;}
+.lesson-nav{display:flex;gap:8px;padding:12px 16px;background:#white;flex-wrap:wrap;border-bottom:2px solid #D3D1C7;background:white;}
+.lesson-tab{padding:8px 14px;border-radius:20px;font-size:15px;font-weight:700;cursor:pointer;border:2px solid transparent;transition:all 0.2s;}
+.lesson-tab.locked{background:#D3D1C7;color:#888780;cursor:not-allowed;}
+.lesson-tab.unlocked{background:white;color:#534AB7;border-color:#AFA9EC;}
+.lesson-tab.active{background:#7F77DD;color:white;}
+.lesson-tab.completed{background:#1D9E75;color:white;}
+.lesson-body{padding:20px;max-width:800px;margin:0 auto;}
+.lesson-title{font-size:26px;font-weight:700;color:#3C3489;margin-bottom:10px;}
+.lesson-desc{font-size:18px;color:#444441;margin-bottom:16px;line-height:1.6;}
+.concept-box{background:#EEEDFE;border-left:6px solid #7F77DD;border-radius:8px;padding:16px 20px;margin-bottom:16px;font-size:18px;color:#3C3489;font-weight:600;line-height:1.7;}
+.example-box{background:#E1F5EE;border-left:6px solid #1D9E75;border-radius:8px;padding:16px 20px;margin-bottom:16px;font-size:18px;color:#085041;line-height:1.7;}
+.question-card{background:#FAEEDA;border-radius:14px;padding:20px;margin-bottom:16px;border:2px solid #FAC775;}
+.question-text{font-size:20px;font-weight:700;color:#412402;margin-bottom:14px;}
+.answer-option{display:block;width:100%;background:white;border:2px solid #FAC775;border-radius:10px;padding:13px 18px;font-size:18px;font-weight:600;color:#633806;cursor:pointer;transition:all 0.2s;text-align:left;margin-bottom:10px;font-family:Arial,sans-serif;}
+.answer-option:hover{background:#FAEEDA;border-color:#EF9F27;}
+.answer-option.correct{background:#EAF3DE;border-color:#639922;color:#173404;}
+.answer-option.wrong{background:#FCEBEB;border-color:#E24B4A;color:#501313;}
+.feedback-box{padding:14px 18px;border-radius:10px;font-size:18px;font-weight:700;margin-top:10px;}
+.feedback-box.correct{background:#EAF3DE;color:#27500A;border:2px solid #97C459;}
+.feedback-box.wrong{background:#FCEBEB;color:#791F1F;border:2px solid #F09595;}
+.next-btn{background:#1D9E75;color:white;border:none;padding:13px 28px;font-size:18px;font-weight:700;border-radius:10px;cursor:pointer;margin-top:14px;display:block;transition:background 0.2s;font-family:Arial,sans-serif;}
+.next-btn:hover{background:#0F6E56;}
+.teacher-msg-box{background:#EEEDFE;border-left:5px solid #7F77DD;border-radius:8px;padding:12px 16px;font-size:17px;color:#3C3489;margin-bottom:8px;font-weight:600;}
+.score-box{background:white;border-radius:14px;padding:22px;border:3px solid #1D9E75;text-align:center;margin-bottom:16px;}
+.score-stars{font-size:36px;margin-bottom:6px;}
+.score-title{font-size:24px;font-weight:700;color:#3C3489;}
+.score-sub{font-size:18px;color:#5F5E5A;margin-top:4px;}
+.nl-wrap{overflow-x:auto;margin:16px 0;}
+.nl-svg{min-width:380px;}
+.saving{font-size:15px;color:#534AB7;font-weight:600;margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📐 Inequality Explorer</h1>
+  <div class="name-tag" id="name-tag">Loading...</div>
+</div>
+<div class="progress-wrap"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+<div class="progress-label" id="progress-label">Loading your progress...</div>
+<div class="lesson-nav" id="lesson-nav"></div>
+<div class="lesson-body" id="lesson-body"></div>
+
+<script>
+var STUDENT = <?= studentJson ?>;
+var SAVED = <?= progressJson ?>;
+
+var LESSONS = [
+  {title:"What Is an Inequality?",icon:"🔍",
+   content:'<div class="lesson-title">🔍 What Is an Inequality?</div><div class="lesson-desc">An <strong>inequality</strong> compares two values that are NOT always equal. Instead of =, we use special symbols!</div><div class="concept-box">📌 Inequality Symbols:<br>&nbsp;&nbsp;<strong>&gt;</strong> means "greater than" &nbsp;|&nbsp; <strong>&lt;</strong> means "less than"<br>&nbsp;&nbsp;<strong>≥</strong> means "greater than or equal to" &nbsp;|&nbsp; <strong>≤</strong> means "less than or equal to"</div><div class="example-box">✅ Example: <strong>x &gt; 3</strong> means x can be 4, 5, 6, 7… (any number bigger than 3!)<br>✅ Example: <strong>y ≤ 10</strong> means y can be 10, 9, 8, 7… (10 or less!)</div>',
+   questions:[
+     {text:"What does the symbol > mean?",options:["Less than","Equal to","Greater than","Not equal"],correct:2,feedback:["Try again! > means BIGGER, not smaller.","Close! = means equal.","🎉 Correct! > means GREATER THAN!","≠ means not equal — not the same as >."]},
+     {text:"Which symbol means 'less than or equal to'?",options:["≥","≤","<",">"],correct:1,feedback:["≥ means greater than OR equal to.","🌟 Yes! ≤ means less than OR equal to!","< means strictly less than.",""> means greater than."]}
+   ]},
+  {title:"Writing Inequalities",icon:"✏️",
+   content:'<div class="lesson-title">✏️ Writing Inequalities from Word Problems</div><div class="lesson-desc">We can turn real-life situations into inequalities! Look for key words.</div><div class="concept-box">📝 Key Words:<br>&nbsp;&nbsp;"at least" → ≥ &nbsp;&nbsp;&nbsp; "at most" → ≤<br>&nbsp;&nbsp;"more than" → &gt; &nbsp;&nbsp;&nbsp; "less than" → &lt;<br>&nbsp;&nbsp;"no more than" → ≤ &nbsp;&nbsp;&nbsp; "no less than" → ≥</div><div class="example-box">🎒 "You need <strong>at least 80 points</strong> to pass."<br>→ Write: <strong>p ≥ 80</strong></div>',
+   questions:[
+     {text:'"The temperature is at most 32°F." Which inequality?',options:["t > 32","t < 32","t ≤ 32","t ≥ 32"],correct:2,feedback:["Not quite! > means greater than.","< excludes 32, but 'at most' includes 32.","🎉 Correct! 'At most 32' means t ≤ 32!","≥ means at least, not at most."]},
+     {text:'"You must be more than 48 inches tall to ride." Which is correct?',options:["h ≥ 48","h > 48","h < 48","h = 48"],correct:1,feedback:["≥ includes 48, but 'more than' doesn't.","🌟 Perfect! 'More than 48' means h > 48!","< means less than — wrong direction.","= means exactly equal."]}
+   ]},
+  {title:"Number Lines",icon:"📏",
+   content:'<div class="lesson-title">📏 Graphing on Number Lines</div><div class="lesson-desc">We can SHOW inequalities on a number line!</div><div class="concept-box">⭕ Open circle = number NOT included (> or <)<br>🔵 Filled circle = number IS included (≥ or ≤)<br>Arrow points toward all solutions!</div><div class="nl-wrap"><svg class="nl-svg" viewBox="0 0 380 130" xmlns="http://www.w3.org/2000/svg"><text x="10" y="20" font-size="15" font-weight="700" fill="#D85A30">x &gt; 3 → open circle, arrow right</text><line x1="20" y1="48" x2="350" y2="48" stroke="#888780" stroke-width="2.5"/><polygon points="350,43 365,48 350,53" fill="#888780"/><circle cx="160" cy="48" r="9" fill="white" stroke="#D85A30" stroke-width="3"/><line x1="160" y1="48" x2="348" y2="48" stroke="#D85A30" stroke-width="5"/><text x="20" y="72" font-size="14" fill="#444441">0</text><text x="58" y="72" font-size="14" fill="#444441">1</text><text x="97" y="72" font-size="14" fill="#444441">2</text><text x="155" y="72" font-size="14" fill="#D85A30" font-weight="700">3</text><text x="193" y="72" font-size="14" fill="#444441">4</text><text x="232" y="72" font-size="14" fill="#444441">5</text><text x="10" y="98" font-size="15" font-weight="700" fill="#1D9E75">x ≤ 5 → filled circle, arrow left</text><line x1="20" y1="115" x2="350" y2="115" stroke="#888780" stroke-width="2.5"/><polygon points="350,110 365,115 350,120" fill="#888780"/><circle cx="212" cy="115" r="9" fill="#1D9E75" stroke="#1D9E75" stroke-width="3"/><line x1="22" y1="115" x2="212" y2="115" stroke="#1D9E75" stroke-width="5"/></svg></div>',
+   questions:[
+     {text:"For x ≥ 7, what kind of circle goes at 7?",options:["Open circle (empty)","Filled/closed circle","No circle needed","An X mark"],correct:1,feedback:["Open circle is for > or < (not included).","✅ Yes! ≥ includes 7, so filled circle!","We always need a circle at the boundary.","We use circles on number lines."]},
+     {text:"For x < −2, which direction does the arrow point?",options:["To the right →","Both directions","To the left ←","No arrow"],correct:2,feedback:["Right = bigger numbers, but < means smaller!","Only one direction.","🎉 Correct! < means smaller numbers → arrow LEFT!","Always need an arrow to show solutions."]}
+   ]},
+  {title:"Solving Inequalities",icon:"🧮",
+   content:'<div class="lesson-title">🧮 Solving One-Step Inequalities</div><div class="lesson-desc">Solving inequalities is like equations — with one BIG rule!</div><div class="concept-box">⚡ Solve just like equations, BUT...<br>🔄 Multiply or divide by a <strong>NEGATIVE</strong> → FLIP the sign!<br>&nbsp;&nbsp;Example: −x &gt; 5 → x &lt; −5</div><div class="example-box">Solve: <strong>x + 4 &gt; 9</strong><br>Subtract 4 → <strong>x &gt; 5</strong> ✅<br><br>Solve: <strong>−3x ≤ 12</strong><br>Divide by −3, FLIP sign → <strong>x ≥ −4</strong> ✅</div>',
+   questions:[
+     {text:"Solve: x − 6 > 10. What is x?",options:["x > 4","x > 16","x < 16","x = 16"],correct:1,feedback:["Check: 10 + 6 = ?","🌟 Yes! Add 6 to both sides → x > 16!","Direction is wrong — no negative involved.","= means equation, this is an inequality."]},
+     {text:"Solve: −2x < 8. What is x?",options:["x < −4","x > −4","x < 4","x > 4"],correct:1,feedback:["Divide by −2 (negative!) → sign must FLIP.","🎉 Correct! Divide by −2 → x > −4 (sign flipped!)","Dividing by negative flips the sign.","8 ÷ −2 = −4, not 4."]}
+   ]},
+  {title:"Real-World Problems",icon:"🌍",
+   content:'<div class="lesson-title">🌍 Inequalities in Real Life!</div><div class="lesson-desc">Inequalities are everywhere! Let\'s solve some real problems.</div><div class="concept-box">📋 Steps:<br>1️⃣ Define your variable (let x = ...)<br>2️⃣ Write the inequality<br>3️⃣ Solve it<br>4️⃣ Check your answer makes sense!</div><div class="example-box">🎮 "You have $25 and games cost $7 each. How many can you buy?"<br>7g ≤ 25 → g ≤ 3.57 → <strong>g ≤ 3 games</strong></div>',
+   questions:[
+     {text:"You need at least $50 babysitting at $8/hr. Minimum hours?",options:["h > 6","h ≥ 7 hours","h ≤ 6","h = 6.25"],correct:1,feedback:["50 ÷ 8 = 6.25, so you need MORE than 6 hours.","🌟 8h ≥ 50 → h ≥ 6.25 → at least 7 whole hours!","≤ means at most, but we need at least $50.","6.25 isn't a whole hour!"]},
+     {text:"A bag holds at most 15 lbs. You add 5 lb of books. Max more pounds?",options:["m = 10","m < 10","m ≤ 10","m ≥ 10"],correct:2,feedback:["= means exactly 10, but you can add less.","< excludes 10, but 10 lbs is fine!","🎉 Correct! 5 + m ≤ 15 → m ≤ 10!","≥ 10 means at least 10, but we need at MOST."]}
+   ]}
+];
+
+// ── State ──────────────────────────────────────────────────
+var states = ["unlocked","locked","locked","locked","locked"];
+var scores = [null,null,null,null,null];
+var currentLesson = 0;
+var currentQ = 0;
+var qAnswered = false;
+
+function init() {
+  document.getElementById("name-tag").textContent = "👤 " + STUDENT.firstName + " · " + STUDENT.period;
+  // Restore saved progress
+  if (SAVED && SAVED.lessons) {
+    for (var i = 0; i < 5; i++) {
+      var L = SAVED.lessons[i];
+      if (L) {
+        scores[i] = L;
+        states[i] = L.complete ? "completed" : "unlocked";
+        if (i + 1 < 5 && L.complete) states[i+1] = "unlocked";
+      }
+    }
+  }
+  // Find first non-completed lesson
+  for (var j = 0; j < 5; j++) {
+    if (states[j] !== "completed") { currentLesson = j; break; }
+    if (j === 4) currentLesson = 4;
+  }
+  renderNav();
+  renderLesson(currentLesson);
+}
+
+function renderNav() {
+  var nav = document.getElementById("lesson-nav");
+  nav.innerHTML = LESSONS.map(function(l,i) {
+    var cls = "lesson-tab ";
+    if (states[i] === "locked") cls += "locked";
+    else if (i === currentLesson && states[i] !== "completed") cls += "active";
+    else if (states[i] === "completed") cls += "completed";
+    else cls += "unlocked";
+    var icon = states[i] === "completed" ? "✅" : states[i] === "locked" ? "🔒" : l.icon;
+    return '<span class="'+cls+'" onclick="switchLesson('+i+')">' + icon + ' ' + l.title + '</span>';
+  }).join("");
+  updateProgress();
+}
+
+function updateProgress() {
+  var done = states.filter(function(s){return s==="completed";}).length;
+  var pct = (done / 5) * 100;
+  document.getElementById("progress-fill").style.width = pct + "%";
+  document.getElementById("progress-label").textContent = "Progress: " + done + " of 5 lessons completed 🌟 · " + STUDENT.period;
+}
+
+function switchLesson(i) {
+  if (states[i] === "locked") { alert("🔒 Complete the previous lesson first!"); return; }
+  currentLesson = i; currentQ = 0; qAnswered = false;
+  renderNav(); renderLesson(i);
+}
+
+function renderLesson(i) {
+  var L = LESSONS[i];
+  var html = L.content;
+  // Teacher messages
+  var msgs = (SAVED && SAVED.messages) ? SAVED.messages : [];
+  if (msgs.length) {
+    html += '<div style="margin-top:16px"><div style="font-size:17px;font-weight:700;color:#534AB7;margin-bottom:8px">📩 Messages from Your Teacher:</div>';
+    msgs.forEach(function(m){ html += '<div class="teacher-msg-box">💬 ' + m + '</div>'; });
+    html += '</div>';
+  }
+  var q = L.questions[currentQ];
+  html += '<div class="question-card"><div class="question-text">❓ Question ' + (currentQ+1) + ' of ' + L.questions.length + ': ' + q.text + '</div>';
+  q.options.forEach(function(opt,oi){
+    html += '<button class="answer-option" id="opt-'+oi+'" onclick="checkAnswer('+oi+')">' + opt + '</button>';
+  });
+  html += '<div id="feedback" style="min-height:20px"></div></div>';
+  document.getElementById("lesson-body").innerHTML = html;
+  window.scrollTo(0,0);
+}
+
+function checkAnswer(chosen) {
+  if (qAnswered) return;
+  qAnswered = true;
+  var L = LESSONS[currentLesson];
+  var q = L.questions[currentQ];
+  var correct = q.correct;
+  var fb = document.getElementById("feedback");
+  for (var i = 0; i < q.options.length; i++) {
+    document.getElementById("opt-"+i).style.pointerEvents = "none";
+  }
+  document.getElementById("opt-"+correct).classList.add("correct");
+  if (chosen !== correct) document.getElementById("opt-"+chosen).classList.add("wrong");
+  var isRight = chosen === correct;
+  fb.className = "feedback-box " + (isRight ? "correct" : "wrong");
+  fb.innerHTML = q.feedback[chosen];
+
+  if (!scores[currentLesson]) scores[currentLesson] = {score:0, total:L.questions.length, complete:false};
+  if (isRight) scores[currentLesson].score++;
+
+  var btn = document.createElement("button");
+  btn.className = "next-btn";
+  if (currentQ < L.questions.length - 1) {
+    btn.textContent = "Next Question →";
+    btn.onclick = function(){ currentQ++; qAnswered = false; renderLesson(currentLesson); };
+  } else {
+    btn.textContent = "🏁 Finish Lesson!";
+    btn.onclick = finishLesson;
+  }
+  fb.after(btn);
+}
+
+function finishLesson() {
+  var sc = scores[currentLesson] ? scores[currentLesson].score : 0;
+  var tot = LESSONS[currentLesson].questions.length;
+  var pct = Math.round((sc/tot)*100);
+  scores[currentLesson] = {score:sc, total:tot, complete:true};
+  states[currentLesson] = "completed";
+  if (currentLesson + 1 < 5) states[currentLesson+1] = "unlocked";
+
+  var stars = pct >= 100 ? "⭐⭐⭐" : pct >= 50 ? "⭐⭐" : "⭐";
+  var html = '<div class="score-box"><div class="score-stars">'+stars+'</div><div class="score-title">Lesson Complete!</div><div class="score-sub">Score: '+sc+'/'+tot+' ('+pct+'%)</div></div>';
+  if (pct < 50) html += '<div class="feedback-box wrong">Keep practicing — review the lesson again! 💪</div>';
+  else if (pct < 100) html += '<div class="feedback-box correct">Great work! Ready for the next lesson? 🎉</div>';
+  else html += '<div class="feedback-box correct">PERFECT SCORE! You\'re an inequality superstar! 🌟</div>';
+
+  if (currentLesson + 1 < 5) {
+    html += '<button class="next-btn" onclick="switchLesson('+(currentLesson+1)+')">Next Lesson: '+LESSONS[currentLesson+1].title+' '+LESSONS[currentLesson+1].icon+' →</button>';
+  } else {
+    html += '<div class="concept-box" style="margin-top:14px">🏆 You finished ALL 5 lessons! You\'re an Inequality Expert! Your teacher has been notified. 🎓</div>';
+  }
+  html += '<div id="save-status" class="saving">💾 Saving your progress...</div>';
+  document.getElementById("lesson-body").innerHTML = html;
+  renderNav();
+  saveProgress();
+}
+
+function saveProgress() {
+  google.script.run
+    .withSuccessHandler(function(result){
+      var el = document.getElementById("save-status");
+      if (el) el.textContent = result.success ? "✅ Progress saved!" : "⚠️ Save failed — try again.";
+    })
+    .withFailureHandler(function(){
+      var el = document.getElementById("save-status");
+      if (el) el.textContent = "⚠️ Could not save. Check your connection.";
+    })
+    .saveProgress({lessons: scores});
+}
+
+init();
+</script>
+</body>
+</html>
